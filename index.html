@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Type play</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Outline Studio - Print Pro</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --border: #e5e5e5;
+            --text-p: #111111;
+            --text-s: #999999;
+            --accent: #000000;
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #dcdcdc; 
+        }
+
+        #app-wrapper {
+            transform-origin: 0 0;
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px; height: 100%;
+            border-right: 1px solid var(--border);
+            padding: 25px 25px;
+            display: flex; flex-direction: column;
+            background: var(--sidebar-bg);
+            z-index: 10; flex-shrink: 0;
+        }
+
+        .title {
+            font-size: 12px; font-weight: 600;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .control-section { margin-bottom: 22px; }
+
+        label {
+            display: block; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-s); margin-bottom: 8px;
+        }
+
+        .header-flex {
+            display: flex; justify-content: space-between;
+            align-items: baseline; margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background: none; border: none; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-s); cursor: pointer; padding: 0;
+            transition: color 0.2s;
+        }
+        .reset-btn:hover { color: var(--accent); text-decoration: none; }
+
+        input[type="range"] {
+            width: 100%; height: 1px; background: var(--border);
+            appearance: none; outline: none; margin: 12px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none; width: 10px; height: 10px;
+            background: var(--accent); border-radius: 50%; cursor: pointer;
+        }
+
+        select {
+            width: 100%; padding: 8px 0; border: none;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px; background: transparent; outline: none; cursor: pointer;
+        }
+
+        .customize-section { margin-top: 40px; }
+        .customize-row { display: flex; align-items: center; gap: 8px; }
+
+        .toggle-container {
+            display: flex; align-items: center; cursor: pointer; gap: 6px; user-select: none;
+        }
+        .circle-outline {
+            width: 14px; height: 14px; border: 1px solid #ccc;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .inner-dot {
+            width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: none;
+        }
+        .toggle-container.active .inner-dot { display: block; }
+        .toggle-container.active .circle-outline { border-color: var(--accent); }
+        .toggle-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-s); }
+
+        .custom-input-line {
+            flex: 1; border: none; border-bottom: 1px solid var(--border);
+            background: transparent; font-size: 12px; outline: none; padding: 2px 0;
+            color: var(--text-s); transition: all 0.2s;
+        }
+        .custom-input-line.active { border-bottom-color: var(--accent); color: var(--text-p); }
+
+        .export-area { margin-top: auto; padding-top: 20px; }
+        .actions-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .btn {
+            flex: 1; padding: 10px 0; font-size: 10px; font-weight: 600;
+            letter-spacing: 0.05em; text-transform: uppercase;
+            border: 1px solid var(--accent); background: white;
+            color: var(--accent); cursor: pointer; transition: all 0.2s ease;
+            text-align: center;
+        }
+        .btn:hover { background: #f8f8f8; }
+
+        .footer-credit { font-size: 10px; color: var(--text-s); letter-spacing: 0.02em; }
+
+        .viewport {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background-color: #dcdcdc; padding: 40px; position: relative;
+        }
+
+        canvas {
+            max-width: 85%; max-height: 85%;
+            aspect-ratio: 3 / 4; background: white;
+            box-shadow: none; cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+    </style>
+</head>
+<body>
+
+    <div id="app-wrapper">
+        <aside class="sidebar">
+            <div class="title">ASCII Outline Pro</div>
+
+            <div class="control-section">
+                <input type="file" id="imageLoader" accept="image/*">
+            </div>
+
+            <div class="control-section">
+                <label>Rendering Mode</label>
+                <select id="fillHoles">
+                    <option value="true">Single Outer Line</option>
+                    <option value="false">Full Fill</option>
+                </select>
+            </div>
+
+            <div class="control-section">
+                <label>Character</label>
+                <select id="charType">
+                    <option value="x">x (Sans Bold)</option>
+                    <option value="■">■ (Solid Block)</option>
+                </select>
+            </div>
+
+            <div class="control-section">
+                <label>Grid Spacing / <span id="spacingVal">10</span></label>
+                <input type="range" id="spacing" min="1" max="30" value="10">
+            </div>
+
+            <div class="control-section">
+                <label>Threshold / <span id="thresholdVal">200</span></label>
+                <input type="range" id="threshold" min="0" max="255" value="200">
+            </div>
+
+            <div class="control-section customize-section">
+                <div class="customize-row">
+                    <div id="customizeToggle" class="toggle-container" onclick="handleToggle()">
+                        <div class="circle-outline">
+                            <div class="inner-dot"></div>
+                        </div>
+                        <span class="toggle-label">Customize</span>
+                    </div>
+                    <!-- 移除长度限制 -->
+                    <input type="text" id="customInput" class="custom-input-line" value="x" readonly>
+                </div>
+            </div>
+
+            <div class="export-area">
+                <div class="header-flex">
+                    <label>Export</label>
+                    <button class="reset-btn" onclick="resetPage()">Reset</button>
+                </div>
+                <div class="actions-row">
+                    <button class="btn" onclick="downloadHD('jpg')">JPG</button>
+                    <button class="btn" onclick="downloadHD('png')">PNG</button>
+                    <button class="btn" onclick="downloadSVG()">SVG</button>
+                </div>
+                <div class="footer-credit">2026 ©Type play</div>
+            </div>
+        </aside>
+
+        <main class="viewport">
+            <canvas id="imageCanvas"></canvas>
+        </main>
+    </div>
+
+<script>
+    /** UI 逻辑 **/
+    const wrapper = document.getElementById('app-wrapper');
+    const DESIGN_W = 1440, DESIGN_H = 900;
+    let globalScale = 1;
+
+    function handleResize() {
+        globalScale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+        wrapper.style.transform = `scale(${globalScale})`;
+        wrapper.style.width = (window.innerWidth / globalScale) + "px";
+        wrapper.style.height = (window.innerHeight / globalScale) + "px";
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    /** 核心逻辑 **/
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const imageLoader = document.getElementById('imageLoader');
+    const charType = document.getElementById('charType');
+    const customInput = document.getElementById('customInput');
+    const toggleContainer = document.getElementById('customizeToggle');
+    const spacingSlider = document.getElementById('spacing');
+    const thresholdSlider = document.getElementById('threshold');
+    const fillHolesSelect = document.getElementById('fillHoles');
+
+    let img = new Image();
+    let isImgLoaded = false;
+    let logicalGrid = null;
+    let isCustomizeActive = false;
+
+    let viewX = 600, viewY = 800, viewScale = 0.8;
+    let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+
+    function initCanvas() {
+        canvas.width = 1200; canvas.height = 1600;
+        ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    initCanvas();
+
+    function handleToggle() {
+        isCustomizeActive = !isCustomizeActive;
+        if(isCustomizeActive) {
+            toggleContainer.classList.add('active');
+            customInput.classList.add('active');
+            customInput.readOnly = false;
+            charType.disabled = true;
+            customInput.focus();
+        } else {
+            toggleContainer.classList.remove('active');
+            customInput.classList.remove('active');
+            customInput.readOnly = true;
+            charType.disabled = false;
+            customInput.value = charType.value;
+        }
+        updateLogic();
+    }
+
+    charType.onchange = () => { if(!isCustomizeActive) customInput.value = charType.value; updateLogic(); };
+    customInput.oninput = () => { updateLogic(); };
+
+    function updateLogic() {
+        if (!isImgLoaded) return;
+        const spacing = parseInt(spacingSlider.value);
+        const threshold = parseInt(thresholdSlider.value);
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.width; tempCanvas.height = img.height;
+        const tCtx = tempCanvas.getContext('2d');
+        tCtx.drawImage(img, 0, 0);
+        const pixels = tCtx.getImageData(0, 0, img.width, img.height).data;
+
+        const cols = Math.floor(img.width / spacing);
+        const rows = Math.floor(img.height / spacing);
+        const grid = new Uint8Array(cols * rows);
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const idx = (Math.floor(r * spacing) * img.width + Math.floor(c * spacing)) * 4;
+                const brightness = (pixels[idx] + pixels[idx+1] + pixels[idx+2]) / 3;
+                if (brightness < threshold && pixels[idx+3] > 128) grid[r * cols + c] = 1;
+            }
+        }
+
+        const externalMask = new Uint8Array(cols * rows);
+        const queue = [];
+        for(let c=0; c<cols; c++) { 
+            if(grid[0*cols+c]===0) queue.push([0,c]); 
+            if(grid[(rows-1)*cols+c]===0) queue.push([rows-1,c]);
+        }
+        for(let r=0; r<rows; r++) {
+            if(grid[r*cols+0]===0) queue.push([r,0]);
+            if(grid[r*cols+(cols-1)]===0) queue.push([r,cols-1]);
+        }
+        while(queue.length > 0) {
+            const [currR, currC] = queue.pop();
+            const idx = currR * cols + currC;
+            if(externalMask[idx]) continue;
+            externalMask[idx] = 1;
+            [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr, dc]) => {
+                const nr = currR+dr, nc = currC+dc;
+                if(nr>=0 && nr<rows && nc>=0 && nc<cols && grid[nr*cols+nc]===0 && !externalMask[nr*cols+nc]) queue.push([nr, nc]);
+            });
+        }
+        logicalGrid = { grid, externalMask, cols, rows, spacing };
+        render();
+    }
+
+    /** 核心绘制函数 **/
+    function drawCore(targetCtx, tx, ty, sc, isTransparent) {
+        if (!logicalGrid) return;
+        const { grid, externalMask, cols, rows, spacing } = logicalGrid;
+        const fillMode = fillHolesSelect.value === "true";
+        const char = customInput.value || " ";
+
+        targetCtx.save();
+        targetCtx.translate(tx, ty);
+        targetCtx.scale(sc, sc);
+
+        targetCtx.fillStyle = "black";
+        targetCtx.font = `900 ${spacing * 1.15}px Arial, Helvetica, sans-serif`;
+        targetCtx.textAlign = "center";
+        targetCtx.textBaseline = "middle";
+
+        const offsetX = -img.width / 2;
+        const offsetY = -img.height / 2;
+
+        for (let r = 1; r < rows - 1; r++) {
+            for (let c = 1; c < cols - 1; c++) {
+                const idx = r * cols + c;
+                let draw = fillMode ? (grid[idx] && (externalMask[idx-1] || externalMask[idx+1] || externalMask[idx-cols] || externalMask[idx+cols])) : grid[idx];
+                
+                if (draw) {
+                    const px = offsetX + c * spacing;
+                    const py = offsetY + r * spacing;
+                    
+                    if (char === '■' && !isCustomizeActive) {
+                        // 消除白色网格优化：1.05倍物理重叠
+                        const overdraw = spacing * 1.05;
+                        targetCtx.fillRect(px - overdraw/2, py - overdraw/2, overdraw, overdraw);
+                    } else {
+                        targetCtx.fillText(char, px, py + spacing * 0.05);
+                    }
+                }
+            }
+        }
+        targetCtx.restore();
+    }
+
+    function render() {
+        ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (isImgLoaded) drawCore(ctx, viewX, viewY, viewScale, false);
+    }
+
+    /** 交互 **/
+    imageLoader.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            img = new Image();
+            img.onload = () => {
+                isImgLoaded = true;
+                viewScale = Math.min(canvas.width/img.width, canvas.height/img.height)*0.8;
+                viewX = canvas.width/2; viewY = canvas.height/2;
+                updateLogic();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    ['threshold', 'spacing', 'fillHoles'].forEach(id => {
+        document.getElementById(id).oninput = () => {
+            document.getElementById('thresholdVal').innerText = thresholdSlider.value;
+            document.getElementById('spacingVal').innerText = spacingSlider.value;
+            updateLogic();
+        };
+    });
+
+    canvas.onwheel = (e) => {
+        if (!isImgLoaded) return;
+        e.preventDefault();
+        const factor = Math.pow(0.999, e.deltaY);
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = (e.offsetX / globalScale) * (canvas.width / rect.width * globalScale);
+        const mouseY = (e.offsetY / globalScale) * (canvas.height / rect.height * globalScale);
+        viewX = mouseX - (mouseX - viewX) * factor; viewY = mouseY - (mouseY - viewY) * factor;
+        viewScale *= factor; render();
+    };
+    canvas.onmousedown = (e) => { isDragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; };
+    window.onmousemove = (e) => {
+        if (!isDragging) return;
+        const dx = (e.clientX - lastMouseX) / globalScale;
+        const dy = (e.clientY - lastMouseY) / globalScale;
+        const rect = canvas.getBoundingClientRect();
+        viewX += dx * (canvas.width / rect.width * globalScale);
+        viewY += dy * (canvas.height / rect.height * globalScale);
+        lastMouseX = e.clientX; lastMouseY = e.clientY; render();
+    };
+    window.onmouseup = () => isDragging = false;
+
+    /** RESET功能：彻底恢复初始 **/
+    function resetPage() {
+        isImgLoaded = false;
+        logicalGrid = null;
+        img = new Image();
+        imageLoader.value = "";
+        
+        spacingSlider.value = 10;
+        document.getElementById('spacingVal').innerText = "10";
+        thresholdSlider.value = 200;
+        document.getElementById('thresholdVal').innerText = "200";
+        charType.value = "x";
+        fillHolesSelect.value = "true";
+        
+        isCustomizeActive = false;
+        toggleContainer.classList.remove('active');
+        customInput.classList.remove('active');
+        customInput.readOnly = true;
+        customInput.value = "x";
+        charType.disabled = false;
+
+        viewX = 600; viewY = 800; viewScale = 0.8;
+        initCanvas();
+    }
+
+    /** 高清印刷级导出 **/
+    function downloadHD(format) {
+        if (!isImgLoaded || !logicalGrid) return;
+        
+        // 强制目标高度为 5000px 以满足高分印刷需求
+        const printScale = Math.max(5000 / img.height, 1);
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = img.width * printScale;
+        exportCanvas.height = img.height * printScale;
+        const eCtx = exportCanvas.getContext('2d');
+
+        if (format === 'jpg') {
+            eCtx.fillStyle = "white";
+            eCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        } else {
+            eCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
+        }
+
+        drawCore(eCtx, exportCanvas.width / 2, exportCanvas.height / 2, printScale, format === 'png');
+
+        const link = document.createElement('a');
+        link.download = `ascii-print-hd.${format}`;
+        link.href = exportCanvas.toDataURL(format === 'jpg' ? 'image/jpeg' : 'image/png', 1.0);
+        link.click();
+    }
+
+    /** SVG 导出 - 无背景透明 **/
+    function downloadSVG() {
+        if (!isImgLoaded || !logicalGrid) return;
+        const { grid, externalMask, cols, rows, spacing } = logicalGrid;
+        const fillMode = fillHolesSelect.value === "true";
+        const char = customInput.value || "x";
+        
+        // 移除了底色矩形 <rect fill="white"/>
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${img.width}" height="${img.height}">`;
+        for (let r = 1; r < rows - 1; r++) {
+            for (let c = 1; c < cols - 1; c++) {
+                const idx = r * cols + c;
+                let draw = fillMode ? (grid[idx] && (externalMask[idx-1] || externalMask[idx+1] || externalMask[idx-cols] || externalMask[idx+cols])) : grid[idx];
+                if (draw) {
+                    const px = c*spacing, py = r*spacing;
+                    if (char === '■' && !isCustomizeActive) {
+                        svg += `<rect x="${px-spacing/2}" y="${py-spacing/2}" width="${spacing+0.5}" height="${spacing+0.5}" fill="black"/>`;
+                    } else {
+                        // 处理特殊字符转义
+                        const safeChar = char.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        svg += `<text x="${px}" y="${py + spacing*0.05}" font-family="Arial" font-weight="900" font-size="${spacing * 1.15}" text-anchor="middle" dominant-baseline="middle" fill="black">${safeChar}</text>`;
+                    }
+                }
+            }
+        }
+        svg += `</svg>`;
+        
+        const link = document.createElement('a');
+        link.download = `ascii-outline-transparent.svg`;
+        link.href = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml'}));
+        link.click();
+    }
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
